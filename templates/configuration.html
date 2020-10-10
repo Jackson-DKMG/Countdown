@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}" media="all"/>
+    <title>Configuration</title>
+</head>
+<header>
+    <li><a href="{{ url_for('validate') }}">Check status</a></li>
+<br>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul id="autofade" class=flashes>
+    {% for message in messages %}
+        {{ message | safe }}
+    {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+
+</header>
+<body>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<div class="div" id="form">
+<form action="{{ url_for('updateConfig') }}" method="post">
+      <input type=password name="password" id="password" placeholder="Password" title="Timer reset & archive decryption">
+        <br><br>
+      <input type="password" name="new_password" id="new_password" placeholder="Confirm password">
+        <br><br>
+    {% for item in data %}
+    {%if 'storage' in item %}
+      <input type="text" id="storage" name="storage" value="{{ data.storage }}" placeholder="Zip storage directory" title="Where the zipped archive will be written. Absolute path recommended." required>
+     {%endif%}
+     {%if 'email' in item %}
+        <br><br>
+      <input type="text" id="email" name="email" value="{{ data.email }}" placeholder="Email address" title="To receive the alerts" required>
+    {%endif%}
+    {% endfor %}
+    <br><br>
+    <input type="submit" name="submit" value="Submit">
+</form>
+
+<div>
+<form id="form2">
+    {% for item in data %}
+    {%if 'loc' in item %}
+    <input type="text" id="{{ item }}" value="{{ data[item] }}" placeholder="Source directory" title="Directory to zip then wipe. Update or empty to change or remove." onchange="updateSource(this.id,this.value)">
+       <br><br>
+    {%endif%}
+    {%endfor%}
+    <input type="text" id="temp" placeholder="Source directory" title="Directory to zip then wipe. Update or empty to change or remove." onchange="updateSource(this.id,this.value)">
+       <br><br>
+
+</form>
+    <br>
+    <button class="button" id="button" onclick="add()">Add</button>
+</div>
+
+<script>
+function add() {
+          elt = document.getElementById('temp');
+          //console.log(elt);
+          if (elt == null) {
+          var input = document.createElement('input');
+          input.className = 'text'
+          var br = document.createElement("br");
+          input.placeholder="Additional source directory";
+          input.style = 'margin-top: 5px';
+          input.setAttribute('onchange', 'updateSource(this.id,this.value)');
+          input.setAttribute('id', 'temp');
+          document.getElementById('form2').appendChild(input);
+          document.getElementById('form2').appendChild(br);
+          }
+          else {
+          //console.log("exists");
+          }
+};
+
+function updateSource(id,value) {
+//console.log("id: ", id, "value: ", value);
+if (value == "") {
+//value = "None";
+if (confirm("Delete source directory?") == true) {
+     $.ajax({
+            type: "POST",
+            url: "{{ url_for('updateSource') }}",
+            dataType: 'json',
+            contentType: 'application/json',
+            data: JSON.stringify({'id': id, 'value': value}),
+            });
+            var element = document.getElementById(id);
+           element.parentNode.removeChild(element);
+            }
+          }
+ else {
+
+ $.ajax({
+            type: "POST",
+            url: "{{ url_for('updateSource') }}",
+            dataType: 'json',
+            contentType: 'application/json',
+            data: JSON.stringify({'id': id, 'value': value}),
+            success: function(data){
+                console.log(data);
+                elt = document.getElementById('temp');
+                elt.setAttribute('id', data);
+                 },
+            });
+            }
+     };
+
+</script>
+
+    <script>
+
+    var password = document.getElementById("password"),
+    confirm_password = document.getElementById("new_password");
+function validatePassword(){
+  if(password.value != new_password.value) {
+    confirm_password.setCustomValidity("Passwords don't match");
+  } else {
+    confirm_password.setCustomValidity('');
+    }
+    }
+    password.onchange = validatePassword;
+    new_password.onkeyup = validatePassword;
+
+    </script>
+
+</div>
+
+
+
+</body>
+</html>

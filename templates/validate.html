@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}" media="all"/>
+    <title>Countdown</title>
+</head>
+<header>
+    <li><a href="{{ url_for('authConfig') }}">Configuration</a></li>
+</header>
+<div>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul id="autofade" class=flashes>
+    {% for message in messages %}
+        {{ message | safe }}
+    {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+</div>
+
+<body>
+
+    <form action="" method="post">
+    <input type="password" name="password" style="text-align: center;" autofocus="autofocus" value="{{ request.form.password }}" placeholder="Password" required>
+    <br>
+    <input type="submit" name="Submit" value="Submit">
+    </form>
+
+
+</body>
+</html>
+

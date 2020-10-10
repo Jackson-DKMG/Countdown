@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}" media="all"/>
+    <title>Countdown</title>
+</head>
+<header>
+    <li><a href="{{ url_for('authConfig') }}">Configuration</a></li>
+</header>
+<body>
+<div></div>
+<div>
+    <h1 style="text-align: center">No action required at this time.</h1>
+</div>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul id="autofade" class=flashes>
+    {% for message in messages %}
+        {{ message | safe }}
+    {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+
+</body>
+</html>
