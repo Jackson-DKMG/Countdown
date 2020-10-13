@@ -24,3 +24,5 @@ If any issue, just delete data.xml and open the interface again. Should allow yo
 
 This works on a Unix environment for now, as the sendmail function isn't working on Windows.
 I may push an update for this, on the other hand I don't really care about Windows.
+
+Note: the sender email adress is hardcoded in line 112 of countdown.py. Change it to whatever works for you.
