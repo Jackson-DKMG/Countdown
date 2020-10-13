@@ -42,64 +42,69 @@ class Countdown(Thread):
         if not interface.is_alive():
             interface.start()
 
-        try:  # if the config file does not exist or is otherwise missing elements, recreate it
-            tree = etree.parse("data.xml")
-            list = []
-            list.append(tree.find("lastcheck").text)
-            list.append(tree.find("alerted").text)
-            list.append(tree.find("wiped").text)
-#            for i in tree.getroot():
+        while True:
+
+            try:  # if the config file does not exist or is otherwise missing elements, recreate it
+                tree = etree.parse("data.xml")
+                list = []
+                list.append(tree.find("lastcheck").text)
+                list.append(tree.find("alerted").text)
+                list.append(tree.find("wiped").text)
+#               for i in tree.getroot():
                 #if i.text == None:
                 #    raise Exception  #normally, no field should be None. Defaults to zero.
  #               list.append(i.text)
-            lastcheck, alerted, wiped  = int(list[0]),int(list[1]),int(list[2])
+                lastcheck, alerted, wiped  = int(list[0]),int(list[1]),int(list[2])
 
-            if wiped == 1:
-                self.shutdown()   #data wiped already, exit.
+                if wiped == 1:
+                    self.shutdown()   #data wiped already, exit.
 
-            if alerted == 0 and int(time()) - lastcheck > 604800: #if more than 7 days since last check-in, warn
+                if alerted == 0 and int(time()) - lastcheck > 604800: #if more than 7 days since last check-in, warn
 
-                for child in tree.getroot():
-                    if child.tag == "alerted":
-                        child.text = "1"
+                    for child in tree.getroot():
+                        if child.tag == "alerted":
+                            child.text = "1"
                     tree.write("data.xml")
-                self.sendmail("alert", 1)
+                    self.sendmail("alert", 1)
 
-                if not interface.is_alive():  #if somehow the interface isn't running, start it.
-                    interface = Interface()
-                    interface.start()
+                    if not interface.is_alive():  #if somehow the interface isn't running, start it.
+                        interface = Interface()
+                        interface.start()
 
-                sleep(21600) #sleep 6 hours
+                    sleep(21600) #sleep 6 hours
 
-            elif alerted == 1 and int(time()) - lastcheck > 691200: #if more than 8 days since last check-in (1 day since first warning)
-                for child in tree.getroot():
-                    if child.tag == "alerted":
-                        child.text = "2"
-                    elif child.tag == "warning_date":
-                        child.text = str(int(time()))   #set warning timestamp.
-                tree.write("data.xml")
-                self.sendmail("alert", 2)
+                elif alerted == 1 and int(time()) - lastcheck > 691200: #if more than 8 days since last check-in (1 day since first warning)
+                    for child in tree.getroot():
+                        if child.tag == "alerted":
+                            child.text = "2"
+                        elif child.tag == "warning_date":
+                            child.text = str(int(time()))   #set warning timestamp.
+                    tree.write("data.xml")
+                    self.sendmail("alert", 2)
 
-                if not interface.is_alive():  # if somehow the interface isn't running, start it.
-                    interface = Interface()
-                    interface.start()
+                    if not interface.is_alive():  # if somehow the interface isn't running, start it.
+                        interface = Interface()
+                        interface.start()
 
-                sleep(21600)  # sleep 6 hours
+                    sleep(21600)  # sleep 6 hours
 
-            elif alerted == 2 and int(time()) - lastcheck > 777600:  # if more than 9 days since last check-in (1 day since second warning).
-                for child in tree.getroot():
-                    if child.tag == "wiped":
-                        child.text = "1"
-                    #elif child.tag == "lastcheck":
-                    #    child.text = str(int(time()))   #set wiping timestamp. Not much point doing that.
-                tree.write("data.xml")
-                self.sendmail("alert", 3)
-                self.encrypt()   #I'm dead, encrypt and wipe all the data.
+                elif alerted == 2 and int(time()) - lastcheck > 777600:  # if more than 9 days since last check-in (1 day since second warning).
+                    for child in tree.getroot():
+                        if child.tag == "wiped":
+                            child.text = "1"
+                        #elif child.tag == "lastcheck":
+                        #    child.text = str(int(time()))   #set wiping timestamp. Not much point doing that.
+                    tree.write("data.xml")
+                    self.sendmail("alert", 3)
+                    self.encrypt()   #I'm dead, encrypt and wipe all the data.
 
-        # different option: if any exception, send to the configuration page (typical situation: first run).
-        except Exception as e:
-            print(e)
-            pass
+            # different option: if any exception, send to the configuration page (typical situation: first run).
+            except Exception as e:
+                print(e)
+                pass
+
+            sleep(600)
+
 
     def sendmail(self, status, info):
         message = MIMEMultipart('alternative')
